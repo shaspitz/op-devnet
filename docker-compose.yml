@@ -1,0 +1,16 @@
+version: '3'
+services:
+  l1:
+    build:
+      context: ./l1
+      dockerfile: Dockerfile
+    ports:
+      - "8545:8545"
+
+  l2:
+    depends_on:
+      - l1
+    build:
+      context: ./l2
+      dockerfile: Dockerfile
+      # TODO: ports to expose?
