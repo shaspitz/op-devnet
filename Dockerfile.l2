@@ -1,0 +1,14 @@
+# Foundry docker image ref based on alpine
+FROM ghcr.io/foundry-rs/foundry:latest
+
+# Install deps
+RUN apk update && \
+    apk add --no-cache git curl jq make bash nodejs npm direnv
+RUN npm install -g pnpm
+
+# Go install and update path
+RUN wget https://golang.org/dl/go1.20.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf go1.20.linux-amd64.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+CMD ["bash"]
