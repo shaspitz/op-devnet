@@ -1,0 +1,5 @@
+# Ignore environment config
+.env
+
+# Allow example environment config 
+!.env.example

@@ -9,4 +9,6 @@ COPY hardhat.config.js ./hardhat.config.js
 
 EXPOSE 8545
 
-CMD ["npx", "hardhat", "node"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

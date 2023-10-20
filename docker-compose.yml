@@ -11,6 +11,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    environment:
+      # Pass in URL from host .env for syncing hardhat
+      - L1_SYNC_URL=${L1_SYNC_URL}
 
   coordinator:
     depends_on:
@@ -18,7 +21,7 @@ services:
         condition: service_healthy
     environment:
       - OP_COMPONENT_TYPE=coordinator
-      - ETH_RPC_URL=http://l1:8545 # TODO: will need updating when networking changes`
+      - ETH_RPC_URL=http://l1:8545 # TODO: will need updating when networking changes
       # Private key of Admin account for l1 contract deployment, see l2/README.md
       - PRIVATE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
       - DEPLOYMENT_CONTEXT=primev-settlement

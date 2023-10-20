@@ -1,5 +1,7 @@
 # op-devnet
 
+Need to fillout `.env` with `L1_SYNC_URL` for hardhat to fetch L1 mainnet state as needed.
+
 ## Useful commands
 
 `docker-compose up -d --build`
