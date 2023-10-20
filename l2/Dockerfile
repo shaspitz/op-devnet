@@ -1,3 +1,5 @@
+# TODO: split into multiple dockerfiles and optimize build, use volumes
+
 # Foundry docker image ref based on alpine
 FROM ghcr.io/foundry-rs/foundry:latest
 
@@ -24,6 +26,10 @@ RUN make geth
 
 # Copy host deploy config into contracts-bedrock package 
 COPY deploy-config/primev-settlement.json /optimism/packages/contracts-bedrock/deploy-config/primev-settlement.json
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
 # Try to query L1 node for block num
 # RUN curl -X POST --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' http://l1:8545
