@@ -11,15 +11,19 @@ RUN wget https://golang.org/dl/go1.20.linux-amd64.tar.gz
 RUN tar -C /usr/local -xzf go1.20.linux-amd64.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 
+# Install op-stack monorepo and build op-node, op-batcher, op-proposer
 RUN git clone --recurse-submodules https://github.com/ethereum-optimism/optimism.git
 WORKDIR /optimism
-# TODO: double check below
 RUN pnpm install && make op-node op-batcher op-proposer && pnpm build
 
+# Install and build op-geth
 WORKDIR /
 RUN git clone https://github.com/ethereum-optimism/op-geth.git
 WORKDIR /op-geth
 RUN make geth
+
+# Copy host deploy config into contracts-bedrock package 
+COPY deploy-config/primev-settlement.json /optimism/packages/contracts-bedrock/deploy-config/primev-settlement.json
 
 # Try to query L1 node for block num
 # RUN curl -X POST --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' http://l1:8545

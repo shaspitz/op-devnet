@@ -2,6 +2,8 @@
 
 ## Useful commands
 
+`docker-compose up -d --build`
+
 ### L1
 
 `docker build -f Dockerfile.l1 -t op-devnet-l1 .`
