@@ -24,8 +24,9 @@ RUN git clone https://github.com/ethereum-optimism/op-geth.git
 WORKDIR /op-geth
 RUN make geth
 
-# Copy host deploy config into contracts-bedrock package 
-COPY deploy-config/primev-settlement.json /optimism/packages/contracts-bedrock/deploy-config/primev-settlement.json
+# Copy host deploy config to tmp location
+# Note if dockerfiles are split, this could be removed from all but the coordinator build
+COPY deploy-config/primev-settlement.json /tmp/deploy-config/primev-settlement.json
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

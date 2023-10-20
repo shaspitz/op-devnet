@@ -25,6 +25,8 @@ services:
     build:
       context: ./l2
       dockerfile: Dockerfile
+    volumes:
+      - shared-contracts-bedrock:/shared-contracts-bedrock
   l2-geth:
     depends_on:
       - coordinator
@@ -41,6 +43,8 @@ services:
     build:
       context: ./l2
       dockerfile: Dockerfile
+    volumes:
+      - shared-contracts-bedrock:/shared-contracts-bedrock
   l2-batcher:
     depends_on:
       - coordinator
@@ -58,3 +62,6 @@ services:
       context: ./l2
       dockerfile: Dockerfile
   # TODOs include ports exposing
+
+volumes:
+  shared-contracts-bedrock:
