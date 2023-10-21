@@ -28,6 +28,10 @@ if [ "$OP_COMPONENT_TYPE" = "coordinator" ]; then
     # Overwrite deploy config with obtained values 
     sed -i 's/"l2OutputOracleStartingTimestamp": "TIMESTAMP",/"l2OutputOracleStartingTimestamp": '"$TIMESTAMP_VALUE"',/' $DEPLOY_CONFIG_PATH
     sed -i 's/"l1StartingBlockTag": "BLOCKHASH",/"l1StartingBlockTag": "'"$HASH_VALUE"'",/' $DEPLOY_CONFIG_PATH
+  
+    # Check our custom deploy config for breaking changes
+    cd /optimism
+    go run op-chain-ops/cmd/check-deploy-config/main.go --path $DEPLOY_CONFIG_PATH
 
     # Create deployments dir, deploy L1 contracts
     mkdir -p /shared-contracts-bedrock/deployments/primev-settlement
