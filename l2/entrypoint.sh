@@ -33,11 +33,18 @@ if [ "$OP_COMPONENT_TYPE" = "coordinator" ]; then
     cd /optimism
     go run op-chain-ops/cmd/check-deploy-config/main.go --path $DEPLOY_CONFIG_PATH
 
+    # Generate jwt secret for op-node to op-geth auth, place in shared volume
+    openssl rand -hex 32 > jwt.txt
+    cp jwt.txt /shared-l2-config 
+
     # Create deployments dir, deploy L1 contracts
     mkdir -p /shared-contracts-bedrock/deployments/primev-settlement
     cd /shared-contracts-bedrock
     forge script scripts/Deploy.s.sol:Deploy --private-key $PRIVATE_KEY --broadcast --rpc-url $ETH_RPC_URL
     forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --private-key $PRIVATE_KEY --broadcast --rpc-url $ETH_RPC_URL
+
+    # Signal service is healthy for other containers to start
+    touch /tmp/service_is_healthy
 
 elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
 
@@ -50,11 +57,8 @@ elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
         --outfile.rollup rollup.json \
         --l1-rpc $ETH_RPC_URL
 
-    # Generate jwt secret
-    openssl rand -hex 32 > jwt.txt
-
     # Place l2 config files + jwt in shared volume
-    cp genesis.json rollup.json jwt.txt /shared-l2-config 
+    cp genesis.json rollup.json /shared-l2-config 
 
     # Block until op-geth has started
     while true; do
@@ -68,6 +72,22 @@ elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
             sleep 5  
         fi
     done
+
+    # Start op-node
+    ./bin/op-node \
+        --l2=http://l2-geth:8551 \
+        --l2.jwt-secret=/shared-l2-config/jwt.txt \
+        --sequencer.enabled \
+        --sequencer.l1-confs=5 \
+        --verifier.l1-confs=4 \
+        --rollup.config=./rollup.json \
+        --rpc.addr=0.0.0.0 \
+        --rpc.port=8547 \
+        --p2p.disable \
+        --rpc.enable-admin \
+        --p2p.sequencer.key=$SEQ_KEY \
+        --l1=$ETH_RPC_URL \
+        --l1.rpckind=debug_geth
 
 elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
 
@@ -98,7 +118,7 @@ elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
         --authrpc.vhosts="*" \
         --authrpc.addr=0.0.0.0 \
         --authrpc.port=8551 \
-        --authrpc.jwtsecret=./jwt.txt \
+        --authrpc.jwtsecret=/shared-l2-config/jwt.txt \
         --rollup.disabletxpoolgossip=true
 
 else

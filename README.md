@@ -7,3 +7,4 @@ Instructions to run:
 3. `docker-compose up -d --build` to run system. 
 4. `docker logs op-devnet-coordinator-1` etc. to inspect individual container logs.
 5. `docker exec -it op-devnet-coordinator-1 /bin/sh` etc. to shell into one of the containers. 
+6. `docker-compose down -v` to bring down system and clear volumes.
