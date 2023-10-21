@@ -56,13 +56,50 @@ elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
     # Place l2 config files + jwt in shared volume
     cp genesis.json rollup.json jwt.txt /shared-l2-config 
 
-# elif geth 
+    # Block until op-geth has started
+    while true; do
+        response=$(curl -s -o /dev/null -w "%{http_code}" "http://l2-geth:8545")
+        # Check if resp between 200 and 400
+        if [ "$response" -ge 200 ] && [ "$response" -lt 400 ]; then
+            echo "Server responded with HTTP code $response"
+            break
+        else
+            echo "No response from server or server error. HTTP code: $response. Retrying..."
+            sleep 5  
+        fi
+    done
+
 elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
 
     # Create datadir, init op-geth
     cd /op-geth
     mkdir datadir
     build/bin/geth init --datadir=datadir /shared-l2-config/genesis.json
+
+    # Start op-geth
+    ./build/bin/geth \
+        --datadir ./datadir \
+        --http \
+        --http.corsdomain="*" \
+        --http.vhosts="*" \
+        --http.port=8545 \
+        --http.addr=0.0.0.0 \
+        --http.api=web3,debug,eth,txpool,net,engine \
+        --ws \
+        --ws.addr=0.0.0.0 \
+        --ws.port=8546 \
+        --ws.origins="*" \
+        --ws.api=debug,eth,txpool,net,engine \
+        --syncmode=full \
+        --gcmode=archive \
+        --nodiscover \
+        --maxpeers=0 \
+        --networkid=42069 \
+        --authrpc.vhosts="*" \
+        --authrpc.addr=0.0.0.0 \
+        --authrpc.port=8551 \
+        --authrpc.jwtsecret=./jwt.txt \
+        --rollup.disabletxpoolgossip=true
 
 else
     echo "container type not impl"
