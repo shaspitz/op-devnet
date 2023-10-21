@@ -1,11 +1,12 @@
-# TODO: split into multiple dockerfiles and optimize build, use volumes
+# TODO: split into multiple dockerfiles and use multi-stage build
+# Bin locations cp'd according to https://stack.optimism.io/docs/build/getting-started/#configure-your-network
 
 # Foundry docker image ref based on alpine
 FROM ghcr.io/foundry-rs/foundry:latest
 
 # Install deps
 RUN apk update && \
-    apk add --no-cache git curl jq make bash nodejs npm direnv
+    apk add --no-cache git curl jq make bash nodejs npm direnv openssl
 RUN npm install -g pnpm
 
 # Go install and update path
@@ -20,7 +21,7 @@ RUN pnpm install && make op-node op-batcher op-proposer && pnpm build
 
 # Install and build op-geth
 WORKDIR /
-RUN git clone https://github.com/ethereum-optimism/op-geth.git
+RUN git clone https://github.com/ethereum-optimism/op-geth.git 
 WORKDIR /op-geth
 RUN make geth
 

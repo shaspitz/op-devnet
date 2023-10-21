@@ -40,16 +40,20 @@ services:
     build:
       context: ./l2
       dockerfile: Dockerfile
+    volumes:
+      - shared-l2-config:/shared-l2-config
   l2-node:
     depends_on:
       - coordinator
     environment:
       - OP_COMPONENT_TYPE=node
+      - ETH_RPC_URL=http://l1:8545 
     build:
       context: ./l2
       dockerfile: Dockerfile
     volumes:
       - shared-contracts-bedrock:/shared-contracts-bedrock
+      - shared-l2-config:/shared-l2-config
   l2-batcher:
     depends_on:
       - coordinator
@@ -69,3 +73,4 @@ services:
   # TODOs include ports exposing
 volumes:
   shared-contracts-bedrock:
+  shared-l2-config:

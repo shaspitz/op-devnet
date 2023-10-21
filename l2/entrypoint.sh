@@ -39,8 +39,33 @@ if [ "$OP_COMPONENT_TYPE" = "coordinator" ]; then
     forge script scripts/Deploy.s.sol:Deploy --private-key $PRIVATE_KEY --broadcast --rpc-url $ETH_RPC_URL
     forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --private-key $PRIVATE_KEY --broadcast --rpc-url $ETH_RPC_URL
 
+elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
+
+    cd /optimism/op-node
+    # Create L2 config files
+    go run cmd/main.go genesis l2 \
+        --deploy-config /shared-contracts-bedrock/deploy-config/primev-settlement.json \
+        --deployment-dir /shared-contracts-bedrock/deployments/primev-settlement \
+        --outfile.l2 genesis.json \
+        --outfile.rollup rollup.json \
+        --l1-rpc $ETH_RPC_URL
+
+    # Generate jwt secret
+    openssl rand -hex 32 > jwt.txt
+
+    # Place l2 config files + jwt in shared volume
+    cp genesis.json rollup.json jwt.txt /shared-l2-config 
+
+# elif geth 
+elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
+
+    # Create datadir, init op-geth
+    cd /op-geth
+    mkdir datadir
+    build/bin/geth init --datadir=datadir /shared-l2-config/genesis.json
+
 else
-    echo "Not coordinator, add func later"
+    echo "container type not impl"
 fi
 
 # Infinite looop
