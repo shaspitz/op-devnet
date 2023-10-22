@@ -10,3 +10,5 @@ Instructions to run:
 6. `docker-compose down -v` to bring down system and clear volumes.
 
 ## TODO: Explain container design and role of L2 coordinator to prevent race conditions
+
+## TODO: Experiement with non-default deploy-config settings
