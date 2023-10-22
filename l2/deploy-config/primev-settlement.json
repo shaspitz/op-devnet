@@ -5,7 +5,7 @@
     "l1StartingBlockTag": "BLOCKHASH",
   
     "l1ChainID": 31337,
-    "l2ChainID": 42069,
+    "l2ChainID": 99999,
     "l2BlockTime": 1,
     "l1BlockTime": 12,
   
@@ -14,7 +14,7 @@
     "channelTimeout": 300,
   
     "p2pSequencerAddress": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
-    "batchInboxAddress": "0xff00000000000000000000000000000000042069",
+    "batchInboxAddress": "0xff00000000000000000000000000000000099999",
     "batchSenderAddress": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
   
     "l2OutputOracleSubmissionInterval": 120,

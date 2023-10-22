@@ -4,7 +4,7 @@ echo "Op Component Type: $OP_COMPONENT_TYPE"
 
 if [ "$OP_COMPONENT_TYPE" = "coordinator" ]; then
 
-    # Only the coordinator copies contracts-bedrock dir from src to shared volume
+    # cp contracts-bedrock dir from src to shared volume
     cp -r /optimism/packages/contracts-bedrock/* /shared-contracts-bedrock
 
     DEPLOY_CONFIG_PATH="/shared-contracts-bedrock/deploy-config/primev-settlement.json"
@@ -43,22 +43,20 @@ if [ "$OP_COMPONENT_TYPE" = "coordinator" ]; then
     forge script scripts/Deploy.s.sol:Deploy --private-key $PRIVATE_KEY --broadcast --rpc-url $ETH_RPC_URL
     forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --private-key $PRIVATE_KEY --broadcast --rpc-url $ETH_RPC_URL
 
-    # Signal service is healthy for other containers to start
-    touch /tmp/service_is_healthy
-
-elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
-
+    # Create L2 config files, place in shared volume
     cd /optimism/op-node
-    # Create L2 config files
     go run cmd/main.go genesis l2 \
         --deploy-config /shared-contracts-bedrock/deploy-config/primev-settlement.json \
         --deployment-dir /shared-contracts-bedrock/deployments/primev-settlement \
         --outfile.l2 genesis.json \
         --outfile.rollup rollup.json \
         --l1-rpc $ETH_RPC_URL
-
-    # Place l2 config files + jwt in shared volume
     cp genesis.json rollup.json /shared-l2-config 
+
+    # Signal service is healthy for other containers to start
+    touch /tmp/service_is_healthy
+
+elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
 
     # Block until op-geth has started
     while true; do
@@ -74,13 +72,14 @@ elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
     done
 
     # Start op-node
+    cd /optimism/op-node
     ./bin/op-node \
         --l2=http://l2-geth:8551 \
         --l2.jwt-secret=/shared-l2-config/jwt.txt \
         --sequencer.enabled \
         --sequencer.l1-confs=5 \
         --verifier.l1-confs=4 \
-        --rollup.config=./rollup.json \
+        --rollup.config=/shared-l2-config/rollup.json \
         --rpc.addr=0.0.0.0 \
         --rpc.port=8547 \
         --p2p.disable \
@@ -114,7 +113,7 @@ elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
         --gcmode=archive \
         --nodiscover \
         --maxpeers=0 \
-        --networkid=42069 \
+        --networkid=99999 \
         --authrpc.vhosts="*" \
         --authrpc.addr=0.0.0.0 \
         --authrpc.port=8551 \
