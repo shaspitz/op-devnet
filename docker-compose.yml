@@ -42,6 +42,11 @@ services:
     depends_on:
       coordinator:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "http://localhost:8545"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     environment:
       - OP_COMPONENT_TYPE=geth
     build:
@@ -51,7 +56,7 @@ services:
       - shared-l2-config:/shared-l2-config
   l2-node:
     depends_on:
-      coordinator:
+      l2-geth:
         condition: service_healthy
     environment:
       - OP_COMPONENT_TYPE=node

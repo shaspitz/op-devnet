@@ -56,39 +56,6 @@ if [ "$OP_COMPONENT_TYPE" = "coordinator" ]; then
     # Signal service is healthy for other containers to start
     touch /tmp/service_is_healthy
 
-elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
-
-    # Block until op-geth has started
-    # TODO: rm in favor of docker-compose sync
-    while true; do
-        response=$(curl -s -o /dev/null -w "%{http_code}" "http://l2-geth:8545")
-        # Check if resp between 200 and 400
-        if [ "$response" -ge 200 ] && [ "$response" -lt 400 ]; then
-            echo "Server responded with HTTP code $response"
-            break
-        else
-            echo "No response from server or server error. HTTP code: $response. Retrying..."
-            sleep 5  
-        fi
-    done
-
-    # Start op-node
-    cd /optimism/op-node
-    ./bin/op-node \
-        --l2=http://l2-geth:8551 \
-        --l2.jwt-secret=/shared-l2-config/jwt.txt \
-        --sequencer.enabled \
-        --sequencer.l1-confs=5 \
-        --verifier.l1-confs=4 \
-        --rollup.config=/shared-l2-config/rollup.json \
-        --rpc.addr=0.0.0.0 \
-        --rpc.port=8547 \
-        --p2p.disable \
-        --rpc.enable-admin \
-        --p2p.sequencer.key=$SEQ_KEY \
-        --l1=$ETH_RPC_URL \
-        --l1.rpckind=debug_geth
-
 elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
 
     # Create datadir, init op-geth
@@ -120,6 +87,25 @@ elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
         --authrpc.port=8551 \
         --authrpc.jwtsecret=/shared-l2-config/jwt.txt \
         --rollup.disabletxpoolgossip=true
+
+elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
+
+    # Start op-node
+    cd /optimism/op-node
+    ./bin/op-node \
+        --l2=http://l2-geth:8551 \
+        --l2.jwt-secret=/shared-l2-config/jwt.txt \
+        --sequencer.enabled \
+        --sequencer.l1-confs=5 \
+        --verifier.l1-confs=4 \
+        --rollup.config=/shared-l2-config/rollup.json \
+        --rpc.addr=0.0.0.0 \
+        --rpc.port=8547 \
+        --p2p.disable \
+        --rpc.enable-admin \
+        --p2p.sequencer.key=$SEQ_KEY \
+        --l1=$ETH_RPC_URL \
+        --l1.rpckind=debug_geth
 
 else
     echo "container type not impl"
