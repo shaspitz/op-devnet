@@ -24,7 +24,7 @@ RUN pnpm install && make op-node op-batcher op-proposer && pnpm build
 WORKDIR /
 RUN git clone https://github.com/ethereum-optimism/op-geth.git 
 WORKDIR /op-geth
-## TODO: checkout stable tag
+RUN git checkout v1.101301.1
 RUN make geth
 
 # Copy host deploy config to tmp location
