@@ -59,6 +59,7 @@ if [ "$OP_COMPONENT_TYPE" = "coordinator" ]; then
 elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
 
     # Block until op-geth has started
+    # TODO: rm in favor of docker-compose sync
     while true; do
         response=$(curl -s -o /dev/null -w "%{http_code}" "http://l2-geth:8545")
         # Check if resp between 200 and 400

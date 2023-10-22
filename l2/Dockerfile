@@ -17,12 +17,14 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 # Install op-stack monorepo and build op-node, op-batcher, op-proposer
 RUN git clone --recurse-submodules https://github.com/ethereum-optimism/optimism.git
 WORKDIR /optimism
+RUN git checkout v1.2.0
 RUN pnpm install && make op-node op-batcher op-proposer && pnpm build
 
 # Install and build op-geth
 WORKDIR /
 RUN git clone https://github.com/ethereum-optimism/op-geth.git 
 WORKDIR /op-geth
+## TODO: checkout stable tag
 RUN make geth
 
 # Copy host deploy config to tmp location
