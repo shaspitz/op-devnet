@@ -4,7 +4,7 @@
   
     "l1StartingBlockTag": "BLOCKHASH",
   
-    "l1ChainID": 31337,
+    "l1ChainID": 1337,
     "l2ChainID": 99999,
     "l2BlockTime": 2,
     "l1BlockTime": 12,
@@ -52,6 +52,10 @@
   
     "eip1559Denominator": 50,
     "eip1559Elasticity": 10,
+  
+    "faultGameAbsolutePrestate": "0x03c7ae758795765c6664a5d39bf63841c71ff191e9189522bad8ebff5d4eca98",
+    "faultGameMaxDepth": 30,
+    "faultGameMaxDuration": 1200,
   
     "systemConfigStartBlock": 0,
   
