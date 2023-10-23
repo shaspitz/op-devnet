@@ -38,21 +38,6 @@ if [[ $COUNTER -eq $RETRIES ]]; then
     exit 1
 fi
 
-# Query L1 for latest block
-OUTPUT=$(cast block latest --rpc-url $GETH_URL | grep -E "(timestamp|hash|number)")
-
-# Extract values from response 
-HASH_VALUE=$(echo "$OUTPUT" | grep "hash" | awk '{print $2}')
-TIMESTAMP_VALUE=$(echo "$OUTPUT" | grep "timestamp" | awk '{print $2}')
-
-# Echo values to verify
-echo "Finalized block hash: $HASH_VALUE"
-echo "Finalized block timestamp: $TIMESTAMP_VALUE"
-
-# Overwrite deploy config with obtained values 
-sed -i 's/"l2OutputOracleStartingTimestamp": "TIMESTAMP",/"l2OutputOracleStartingTimestamp": '"$TIMESTAMP_VALUE"',/' $DEPLOY_CONFIG_PATH
-sed -i 's/"l1StartingBlockTag": "BLOCKHASH",/"l1StartingBlockTag": "'"$HASH_VALUE"'",/' $DEPLOY_CONFIG_PATH
-
 # Check our custom deploy config for breaking changes
 cd /shared-optimism
 go run op-chain-ops/cmd/check-deploy-config/main.go --path $DEPLOY_CONFIG_PATH
@@ -106,7 +91,7 @@ go run cmd/main.go genesis l1 \
     --l1-deployments /.deploy \
     --outfile.l1 /genesis-l1.json
 
-# Setup for geth instance (no longer in dev mode)
+# Setup for geth instance (no longer in dev mode, but still POA)
 GETH_DATA_DIR=/db
 mkdir /db
 GETH_CHAINDATA_DIR="$GETH_DATA_DIR/geth/chaindata"
