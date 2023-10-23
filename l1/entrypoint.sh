@@ -87,12 +87,12 @@ cp /shared-optimism/packages/contracts-bedrock/deployments/primev-settlement/.de
 
 forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --private-key $PRIVATE_KEY --broadcast --rpc-url $GETH_URL
 
-# Send debug_dumpBlock request to geth, save res to /accounts.json
+# Send debug_dumpBlock request to geth, save res to /allocs.json
 BODY='{"id":3, "jsonrpc":"2.0", "method": "debug_dumpBlock", "params":["latest"]}'
 curl -s -X POST \
      -H "Content-type: application/json" \
      -d "${BODY}" \
-     "${GETH_URL}" | jq -r '.result' > /accounts.json
+     "${GETH_URL}" | jq -r '.result' > /allocs.json
 
 # Kill ephemmeral geth in dev mode, we need to mutate l1 genesis and start again
 kill $GETH_PID
@@ -102,7 +102,7 @@ cd /shared-optimism/op-node
 # Create l1 genesis 
 go run cmd/main.go genesis l1 \
     --deploy-config $DEPLOY_CONFIG_PATH \
-    --l1-allocs /accounts.json \
+    --l1-allocs /allocs.json \
     --l1-deployments /.deploy \
     --outfile.l1 /genesis-l1.json
 
@@ -162,4 +162,3 @@ exec geth \
 	--metrics \
 	--metrics.addr=0.0.0.0 \
 	--metrics.port=6060 \
-	"$@"

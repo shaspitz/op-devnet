@@ -12,3 +12,7 @@ Instructions to run:
 ## TODO: Explain container design and role of L2 coordinator to prevent race conditions
 
 ## TODO: Experiement with non-default deploy-config settings
+
+## TODO: can improve execution time if you cache l1 genesis state in volume
+
+## TODO: go through example deploy config json and see if anything else is breaking 
