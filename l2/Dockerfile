@@ -6,7 +6,7 @@ FROM ghcr.io/foundry-rs/foundry:latest
 
 # Install deps
 RUN apk update && \
-    apk add --no-cache git curl jq make bash nodejs npm direnv openssl
+    apk add --no-cache git curl jq make bash nodejs npm direnv openssl python3
 RUN npm install -g pnpm
 
 # Go install and update path
@@ -18,7 +18,9 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 RUN git clone --recurse-submodules https://github.com/ethereum-optimism/optimism.git
 WORKDIR /optimism
 RUN git checkout v1.2.0
-RUN pnpm install && make op-node op-batcher op-proposer && pnpm build
+RUN pnpm install 
+RUN make op-node op-batcher op-proposer 
+RUN pnpm build
 
 # Install and build op-geth
 WORKDIR /
@@ -26,10 +28,6 @@ RUN git clone https://github.com/ethereum-optimism/op-geth.git
 WORKDIR /op-geth
 RUN git checkout v1.101301.1
 RUN make geth
-
-# Copy host deploy config to tmp location
-# Note if dockerfiles are split, this could be removed from all but the coordinator build
-COPY deploy-config/primev-settlement.json /tmp/deploy-config/primev-settlement.json
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

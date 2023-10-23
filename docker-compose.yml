@@ -7,13 +7,21 @@ services:
     ports:
       - "8545:8545"
     healthcheck:
+      # TODO: will need to change
       test: ["CMD-SHELL", "nc -z localhost 8545 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
     environment:
-      # Pass in URL from host .env for syncing hardhat
-      - L1_SYNC_URL=${L1_SYNC_URL}
+      # Private key of Admin account for l1 contract deployment, see l1/deploy-config/README.md
+      - PRIVATE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+      - DEPLOYMENT_CONTEXT=primev-settlement
+      # Arbitrary salt for L1 contract deployment, see https://docs.openzeppelin.com/cli/2.8/deploying-with-create2#create2
+      # and https://github.com/ethereum-optimism/optimism/issues/7749.
+      - IMPL_SALT=primev-settlement
+      - GETH_URL=http://localhost:8545
+    volumes:
+      - shared-optimism:/shared-optimism
   coordinator:
     depends_on:
       l1:
@@ -26,17 +34,12 @@ services:
     environment:
       - OP_COMPONENT_TYPE=coordinator
       - ETH_RPC_URL=http://l1:8545 
-      # Private key of Admin account for l1 contract deployment, see l2/README.md
-      - PRIVATE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
-      - DEPLOYMENT_CONTEXT=primev-settlement
-      # Arbitrary salt for L1 contract deployment, see https://docs.openzeppelin.com/cli/2.8/deploying-with-create2#create2
-      # and https://github.com/ethereum-optimism/optimism/issues/7749.
-      - IMPL_SALT=primev-settlement
+
     build:
       context: ./l2
       dockerfile: Dockerfile
     volumes:
-      - shared-contracts-bedrock:/shared-contracts-bedrock
+      - shared-optimism:/shared-optimism
       - shared-l2-config:/shared-l2-config
   l2-geth:
     depends_on:
@@ -67,7 +70,7 @@ services:
       context: ./l2
       dockerfile: Dockerfile
     volumes:
-      - shared-contracts-bedrock:/shared-contracts-bedrock
+      - shared-optimism:/shared-optimism
       - shared-l2-config:/shared-l2-config
   l2-batcher:
     depends_on:
@@ -89,5 +92,5 @@ services:
       dockerfile: Dockerfile
   # TODOs include ports exposing
 volumes:
-  shared-contracts-bedrock:
+  shared-optimism:
   shared-l2-config:
