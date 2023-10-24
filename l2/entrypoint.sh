@@ -31,6 +31,7 @@ elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
     # Start op-geth
     ./build/bin/geth \
         --datadir ./datadir \
+        --verbosity=5\
         --http \
         --http.corsdomain="*" \
         --http.vhosts="*" \
@@ -46,31 +47,51 @@ elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
         --gcmode=archive \
         --nodiscover \
         --maxpeers=0 \
-        --networkid=99999 \
+        --networkid=$L2_CHAIN_ID \
+        --rpc.allow-unprotected-txs \
+        --authrpc.addr="0.0.0.0"\
+        --authrpc.port="8551" \
         --authrpc.vhosts="*" \
-        --authrpc.addr=0.0.0.0 \
-        --authrpc.port=8551 \
         --authrpc.jwtsecret=/shared-l2-config/jwt.txt \
-        --rollup.disabletxpoolgossip=true
+        --gcmode=archive \
+        --metrics \
+        --metrics.addr=0.0.0.0 \
+        --metrics.port=6060 \
 
 elif [ "$OP_COMPONENT_TYPE" = "node" ]; then
 
     # Start op-node
+
+    # TODO: see pattern from src docker compose on how op-node is spun up -> it overrides the the entrypoint
+    # This even explains the test-jwt-secret shit
+
+
+    # following removed
+    #   --snapshotlog.file=/op_log/snapshot.log \
+
     cd /optimism/op-node
     ./bin/op-node \
-        --l2=http://l2-geth:8551 \
-        --l2.jwt-secret=/shared-l2-config/jwt.txt \
-        --sequencer.enabled \
-        --sequencer.l1-confs=5 \
-        --verifier.l1-confs=4 \
-        --rollup.config=/shared-l2-config/rollup.json \
-        --rpc.addr=0.0.0.0 \
-        --rpc.port=8547 \
-        --p2p.disable \
-        --rpc.enable-admin \
-        --p2p.sequencer.key=$SEQ_KEY \
-        --l1=$ETH_RPC_URL \
-        --l1.rpckind=debug_geth
+      --l1=ws://l1:8546 \
+      --l2=http://l2-geth:8551 \
+      --l2.jwt-secret=/shared-l2-config/jwt.txt \
+      --sequencer.enabled \
+      --sequencer.l1-confs=0 \
+      --verifier.l1-confs=0 \
+      --p2p.sequencer.key=8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba \
+      --rollup.config=/shared-l2-config/rollup.json \
+      --rpc.addr=0.0.0.0 \
+      --rpc.port=8545 \
+      --p2p.listen.ip=0.0.0.0 \
+      --p2p.listen.tcp=9003 \
+      --p2p.listen.udp=9003 \
+      --p2p.scoring.peers=light \
+      --p2p.ban.peers=true \
+      --p2p.priv.path=/shared-optimism/ops-bedrock/p2p-node-key.txt \
+      --metrics.enabled \
+      --metrics.addr=0.0.0.0 \
+      --metrics.port=7300 \
+      --pprof.enabled \
+      --rpc.enable-admin 
 
 else
     echo "container type not impl"

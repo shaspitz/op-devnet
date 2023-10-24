@@ -46,6 +46,7 @@ services:
       retries: 3
     environment:
       - OP_COMPONENT_TYPE=geth
+      - L2_CHAIN_ID=901
     build:
       context: ./l2
       dockerfile: Dockerfile
