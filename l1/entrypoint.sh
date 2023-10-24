@@ -70,7 +70,7 @@ forge script scripts/Deploy.s.sol:Deploy --sender $ACCOUNT --broadcast --rpc-url
 # save .deploy artifact before sync
 cp /shared-optimism/packages/contracts-bedrock/deployments/primev-settlement/.deploy /.deploy
 
-forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --private-key $PRIVATE_KEY --broadcast --rpc-url $GETH_URL
+forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --broadcast --rpc-url $GETH_URL
 
 # Send debug_dumpBlock request to geth, save res to /allocs.json
 BODY='{"id":3, "jsonrpc":"2.0", "method": "debug_dumpBlock", "params":["latest"]}'
@@ -115,6 +115,9 @@ geth --verbosity=3 init \
      "$GENESIS_FILE_PATH"
 
 echo "Starting geth with chain id $CHAIN_ID"
+
+# Signal setup complete
+touch /tmp/setup_complete
 
 exec geth \
 	--datadir="$GETH_DATA_DIR" \

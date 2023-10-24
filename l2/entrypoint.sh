@@ -11,15 +11,15 @@ if [ "$OP_COMPONENT_TYPE" = "coordinator" ]; then
     # Create L2 config files, place in shared volume
     cd /optimism/op-node
     go run cmd/main.go genesis l2 \
-        --deploy-config /shared-contracts-bedrock/deploy-config/primev-settlement.json \
-        --deployment-dir /shared-contracts-bedrock/deployments/primev-settlement \
+        --deploy-config "/shared-optimism/packages/contracts-bedrock/deploy-config/primev-settlement.json" \
+        --deployment-dir /shared-optimism/packages/contracts-bedrock/deployments/primev-settlement \
         --outfile.l2 genesis.json \
         --outfile.rollup rollup.json \
         --l1-rpc $ETH_RPC_URL
     cp genesis.json rollup.json /shared-l2-config 
 
-    # Signal service is healthy for other containers to start
-    touch /tmp/service_is_healthy
+    # Signal setup complete
+    touch /tmp/setup_complete
 
 elif [ "$OP_COMPONENT_TYPE" = "geth" ]; then
 

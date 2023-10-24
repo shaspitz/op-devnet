@@ -4,17 +4,12 @@ services:
     build:
       context: ./l1
       dockerfile: Dockerfile
-    ports:
-      - "8545:8545"
     healthcheck:
-      # TODO: will need to change
-      test: ["CMD-SHELL", "nc -z localhost 8545 || exit 1"]
+      test: ["CMD-SHELL", "test -e /tmp/setup_complete && curl -f http://localhost:8545"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 30
     environment:
-      # Private key of Admin account for l1 contract deployment, see l1/deploy-config/README.md
-      - PRIVATE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
       - DEPLOYMENT_CONTEXT=primev-settlement
       # Arbitrary salt for L1 contract deployment, see https://docs.openzeppelin.com/cli/2.8/deploying-with-create2#create2
       # and https://github.com/ethereum-optimism/optimism/issues/7749.
@@ -27,14 +22,13 @@ services:
       l1:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "test -f /tmp/service_is_healthy"]
+      test: ["CMD-SHELL", "test -f /tmp/setup_complete"]
       interval: 10s
       timeout: 5s
-      retries: 20
+      retries: 10
     environment:
       - OP_COMPONENT_TYPE=coordinator
       - ETH_RPC_URL=http://l1:8545 
-
     build:
       context: ./l2
       dockerfile: Dockerfile
@@ -46,7 +40,7 @@ services:
       coordinator:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "http://localhost:8545"]
+      test: ["CMD", "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "http://l2-geth:8545"]
       interval: 10s
       timeout: 5s
       retries: 3

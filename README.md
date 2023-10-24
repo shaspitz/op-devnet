@@ -9,6 +9,8 @@ Instructions to run:
 5. `docker exec -it op-devnet-coordinator-1 /bin/sh` etc. to shell into one of the containers. 
 6. `docker-compose down -v` to bring down system and clear volumes.
 
+## TODO: single coordinator with pre-built images for everything else.
+
 ## TODO: Explain container design and role of L2 coordinator to prevent race conditions
 
 ## TODO: Experiement with non-default deploy-config settings
