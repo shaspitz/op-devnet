@@ -26,6 +26,8 @@ ADDRESSES_JSON_PATH="$DEVNET_DIR/addresses.json" # TODO: bad naming, make L1_DEP
 SDK_ADDRESSES_JSON_PATH="$DEVNET_DIR/sdk-addresses.json"
 ROLLUP_CONFIG_PATH="$DEVNET_DIR/rollup.json"
 
+GETH_URL='http://localhost:8545' 
+
 mkdir -p "$DEVNET_DIR"
 
 echo Starting devnet setup...
@@ -35,7 +37,6 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
 
     if [ ! -e "$ALLOCS_PATH" ]; then
         echo "Generating allocs-l1.json"
-        # TODO: skipped weird timestamp stuff
         cat "$DEVNET_CONFIG_TEMPLATE_PATH" > "$DEVNET_CONFIG_PATH"
         # TODO: mutations could happen here
 
@@ -47,8 +48,7 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
         # Capture PID of process we just started 
         GETH_PID=$!
 
-        # Wait for geth to start up
-        GETH_URL='http://localhost:8545' 
+        # Wait for ephemeral geth to start up
         COUNTER=0
         RETRIES=10
         while [[ $COUNTER -lt $RETRIES ]]; do
@@ -106,12 +106,40 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
         echo "allocs-l1.json already exist"
     fi
 
+    # TODO: skipping init devnet l1 depoly config with updated timestamp
 
+    cd $OP_NODE_DIR
+    # Create l1 genesis 
+    go run cmd/main.go genesis l1 \
+        --deploy-config $DEVNET_CONFIG_PATH \
+        --l1-allocs $ALLOCS_PATH \
+        --l1-deployments $ADDRESSES_JSON_PATH \
+        --outfile.l1 $GENESIS_L1_PATH
 else 
     echo "genesis-l1.json already exist"
 fi    
 
-echo "Starting L1 chain"
+# Signal L1 to start
+touch /shared-optimism/start_l1
+echo "signaled L1 to start"
+while true; do
+    sleep 10  
+done
+
+if [ ! -e "$GENESIS_L2_PATH" ]; then
+    echo "Generating genesis-l2.json and rollup.json"
+    cd $OP_NODE_DIR
+    go run cmd/main.go genesis l2 \
+        --l1-rpc $GETH_URL \
+        --deploy-config $DEVNET_CONFIG_PATH \
+        --deployments-dir $DEPLOYMENT_DIR \
+        --outfile.l2 $GENESIS_L2_PATH \
+        --outfile.rollup $ROLLUP_CONFIG_PATH
+else 
+    echo "genesis-l2.json and rollup.json already exist"
+fi
+
+# TODO: separate signal for l2 possible?
 
 while true; do
     sleep 10  
