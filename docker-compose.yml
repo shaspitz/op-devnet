@@ -41,17 +41,6 @@ services:
       context: ./op-proposer
     volumes:
       - shared-optimism:/shared-optimism
-    environment:
-      OP_PROPOSER_L1_ETH_RPC: http://l1-geth:8545
-      OP_PROPOSER_ROLLUP_RPC: http://op-node:8545
-      OP_PROPOSER_POLL_INTERVAL: 1s
-      OP_PROPOSER_NUM_CONFIRMATIONS: 1
-      OP_PROPOSER_MNEMONIC: test test test test test test test test test test test junk
-      OP_PROPOSER_L2_OUTPUT_HD_PATH: "m/44'/60'/0'/0/1"
-      OP_PROPOSER_PPROF_ENABLED: "true"
-      OP_PROPOSER_METRICS_ENABLED: "true"
-      OP_PROPOSER_ALLOW_NON_FINALIZED: "true"
-      OP_PROPOSER_RPC_ENABLE_ADMIN: "true"
 
 volumes:
   shared-optimism:

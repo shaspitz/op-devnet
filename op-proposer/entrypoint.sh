@@ -3,11 +3,11 @@ set -exu
 
 MONOREPO_DIR=/shared-optimism 
 DEVNET_DIR="$MONOREPO_DIR/.devnet"
-# ROLLUP_CONFIG_PATH="$DEVNET_DIR/rollup.json"
+ROLLUP_CONFIG_PATH="$DEVNET_DIR/rollup.json"
 ADDRESSES_JSON_PATH="$DEVNET_DIR/addresses.json" # TODO: bad naming, make L1_DEPLOYMENTS_PATH TMP_L1_DEPLOYMENTS_PATH and this L1_DEPLOYMENTS_PATH
 
-# L1_GETH_URL="http://l1-geth:8545"
-# OP_NODE_URL="http://op-node:8545"
+L1_GETH_URL="http://l1-geth:8545"
+OP_NODE_URL="http://op-node:8545"
 OP_BATCHER_URL="http://op-batcher:8545"
 
 # Wait on op-batcher to start
@@ -20,14 +20,14 @@ done
 L2_OUTPUT_ORACLE=$(jq -r '.L2OutputOracleProxy' $ADDRESSES_JSON_PATH)
 
 exec op-proposer \
-    --l2oo-address=$L2_OUTPUT_ORACLE
-    # --l1-eth-rpc=$L1_GETH_URL \
-    # --rollup-rpc=$OP_NODE_URL \
-    # --poll-interval=1s \
-    # --num-confirmations=1 \
-    # --allow-non-finalized \
-    # --rpc.port=8560 \
-    # --rpc.enable-admin \
-    # --metrics.enabled \
-    # --pprof.enabled \
-    # --private-key=8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba
+    --l2oo-address=$L2_OUTPUT_ORACLE \
+    --l1-eth-rpc=$L1_GETH_URL \
+    --rollup-rpc=$OP_NODE_URL \
+    --poll-interval=1s \
+    --num-confirmations=1 \
+    --mnemonic="test test test test test test test test test test test junk" \
+    --l2-output-hd-path="m/44'/60'/0'/0/1" \
+    --pprof.enabled \
+    --metrics.enabled \
+    --allow-non-finalized \
+    --rpc.enable-admin \
