@@ -116,7 +116,9 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
         echo "allocs-l1.json already exist"
     fi
 
-    # TODO: skipping init devnet l1 depoly config with updated timestamp
+    # HACKY HACKY, no idea why replacing this timestamp field is needed.
+    # See https://github.com/shaspitz/optimism/blob/6911bdc72e5a9a4f4f8af956cc7f7610f9914bf1/bedrock-devnet/devnet/__init__.py#L192
+    jq --arg ts "$(printf '0x%x\n' $(date +%s))" '.l1GenesisBlockTimestamp = $ts' "$DEVNET_CONFIG_TEMPLATE_PATH" > "$DEVNET_CONFIG_PATH"
 
     cd $OP_NODE_DIR
     # Create l1 genesis 
