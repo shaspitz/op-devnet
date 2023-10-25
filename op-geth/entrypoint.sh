@@ -1,6 +1,7 @@
 #!/bin/bash
 set -exu
 
+# Wait on signal from coordinator to start
 while [ ! -f "/shared-optimism/start_l2" ]; do
   sleep 5 # sec
 done

@@ -22,7 +22,9 @@ services:
       context: ./op-node
     volumes:
       - shared-optimism:/shared-optimism
-
+  op-batcher:
+    build:
+      context: ./op-batcher
 
 volumes:
   shared-optimism:

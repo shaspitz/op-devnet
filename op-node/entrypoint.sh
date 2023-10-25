@@ -3,6 +3,7 @@ set -exu
 
 L2_GETH_URL="http://op-geth:8545"
 
+# Wait on op-geth to start before starting op-node
 while ! curl -s -X POST "${L2_GETH_URL}" -H "Content-type: application/json" \
     -d '{"id":1, "jsonrpc":"2.0", "method": "eth_chainId", "params":[]}' | grep -q "jsonrpc"; do
     sleep 5 # sec
