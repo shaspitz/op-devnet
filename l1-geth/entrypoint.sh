@@ -46,9 +46,6 @@ fi
 # Warning: Archive mode is required, otherwise old trie nodes will be
 # pruned within minutes of starting the devnet.
 
-
-# TODO: address jwt secret flag is it needed?
-
 exec geth \
 	--datadir="$GETH_DATA_DIR" \
 	--verbosity="$VERBOSITY" \
