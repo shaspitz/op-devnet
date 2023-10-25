@@ -24,7 +24,7 @@ ENV GOPATH /go
 RUN make pre-devnet
 ENV PATH $PATH:$GOPATH/bin
 
-COPY entrypoint.sh /entrypoint.sh
+COPY entrypoint-coordinator.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
