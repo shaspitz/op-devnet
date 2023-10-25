@@ -20,6 +20,13 @@ services:
     volumes:
       - shared-optimism:/shared-optimism
       # TODO: could add /db as persisted volume
+  op-node:
+    build:
+      context: .
+      dockerfile: Dockerfile-node
+    volumes:
+      - shared-optimism:/shared-optimism
+
 
 volumes:
   shared-optimism:

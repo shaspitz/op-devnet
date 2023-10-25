@@ -50,7 +50,6 @@ fi
 
 
 # TODO: address jwt secret flag is it needed?
-# --authrpc.jwtsecret=/config/jwt-secret.txt \
 
 exec geth \
 	--datadir="$GETH_DATA_DIR" \
@@ -79,6 +78,7 @@ exec geth \
 	--authrpc.addr="0.0.0.0" \
 	--authrpc.port="8551" \
 	--authrpc.vhosts="*" \
+	--authrpc.jwtsecret=/shared-optimism/ops-bedrock/test-jwt-secret.txt \
 	--gcmode=archive \
 	--metrics \
 	--metrics.addr=0.0.0.0 \
