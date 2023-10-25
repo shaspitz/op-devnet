@@ -1,9 +1,6 @@
 #!/bin/sh
 
-# Based off https://github.com/ethereum-optimism/optimism/tree/develop/bedrock-devnet
-# with consistency to mev-commit docker/shell setup.
-
-# Func def to be used later in script
+# Func to be used later in script
 wait_on_rpc_server() {
     local URL="$1"
     local COUNTER=0

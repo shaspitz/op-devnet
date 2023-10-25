@@ -1,8 +1,6 @@
 #!/bin/sh
 set -exu
 
-# TODO: replace with code from monorepo, and health check in docker-compose 
-
 while [ ! -f "/shared-optimism/start_l2" ]; do
   sleep 5 # sec
 done
