@@ -23,19 +23,6 @@ services:
   op-batcher:
     build:
       context: ./op-batcher
-    environment:
-      OP_BATCHER_L1_ETH_RPC: http://l1-geth:8545
-      OP_BATCHER_L2_ETH_RPC: http://op-geth:8545
-      OP_BATCHER_ROLLUP_RPC: http://op-node:8545
-      OP_BATCHER_MAX_CHANNEL_DURATION: 1
-      OP_BATCHER_SUB_SAFETY_MARGIN: 4 
-      OP_BATCHER_POLL_INTERVAL: 1s
-      OP_BATCHER_NUM_CONFIRMATIONS: 1
-      OP_BATCHER_MNEMONIC: test test test test test test test test test test test junk
-      OP_BATCHER_SEQUENCER_HD_PATH: "m/44'/60'/0'/0/2"
-      OP_BATCHER_PPROF_ENABLED: "true"
-      OP_BATCHER_METRICS_ENABLED: "true"
-      OP_BATCHER_RPC_ENABLE_ADMIN: "true"
   op-proposer:
     build:
       context: ./op-proposer

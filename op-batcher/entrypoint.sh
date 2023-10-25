@@ -11,17 +11,16 @@ while ! curl -s -X POST "${OP_NODE_URL}" -H "Content-type: application/json" \
     sleep 5 # sec
 done
 
-exec op-batcher 
-    # --l1-eth-rpc=$L1_GETH_URL \
-    # --l2-eth-rpc=$OP_GETH_URL \
-    # --rollup-rpc=$OP_NODE_URL \
-    # --max-channel-duration=1 \
-    # --sub-safety-margin=4 \
-    # --poll-interval=1s \
-    # --num-confirmations=1 \
-    # --safe-abort-nonce-too-low-count=3 \
-    # --resubmission-timeout=30s \
-    # --rpc.addr=0.0.0.0 \
-    # --rpc.port=8548 \
-    # --rpc.enable-admin \
-    # --private-key=8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba
+exec op-batcher \
+    --l1-eth-rpc=$L1_GETH_URL \
+    --l2-eth-rpc=$OP_GETH_URL \
+    --rollup-rpc=$OP_NODE_URL \
+    --max-channel-duration=1 \
+    --sub-safety-margin=4 \
+    --poll-interval=1s \
+    --num-confirmations=1 \
+    --mnemonic="test test test test test test test test test test test junk" \
+    --sequencer-hd-path="m/44'/60'/0'/0/2" \
+    --pprof.enabled \
+    --metrics.enabled \
+    --rpc.enable-admin
