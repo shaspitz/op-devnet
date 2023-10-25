@@ -12,6 +12,14 @@ services:
       dockerfile: Dockerfile-l1
     volumes:
       - shared-optimism:/shared-optimism
+      # TODO: could add /db as persisted volume
+  l2:
+    build: 
+      context: .
+      dockerfile: Dockerfile-l2
+    volumes:
+      - shared-optimism:/shared-optimism
+      # TODO: could add /db as persisted volume
 
 volumes:
   shared-optimism:

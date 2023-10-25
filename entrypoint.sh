@@ -3,6 +3,31 @@
 # Based off https://github.com/ethereum-optimism/optimism/tree/develop/bedrock-devnet
 # with consistency to mev-commit docker/shell setup.
 
+# Func def to be used later in script
+wait_on_rpc_server() {
+    local URL="$1"
+    local COUNTER=0
+    local RETRIES=10
+    
+    while [[ $COUNTER -lt $RETRIES ]]; do
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Trying to connect to RPC server at ${URL}"
+        
+        if curl -s -X POST "${URL}" -H "Content-type: application/json" \
+        -d '{"id":1, "jsonrpc":"2.0", "method": "eth_chainId", "params":[]}' | grep -q "jsonrpc"; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') - RPC server at ${URL} ready"
+            break
+        fi
+        
+        sleep 1 # sec 
+        COUNTER=$((COUNTER + 1))
+    done
+    
+    if [[ $COUNTER -eq $RETRIES ]]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Timed out waiting for RPC server at ${URL}."
+        exit 1
+    fi
+}
+
 # TODO: change devnetL1 to primev string, use custom deploy config
 # TODO: possibly clean up naming
 MONOREPO_DIR=/shared-optimism 
@@ -26,7 +51,7 @@ ADDRESSES_JSON_PATH="$DEVNET_DIR/addresses.json" # TODO: bad naming, make L1_DEP
 SDK_ADDRESSES_JSON_PATH="$DEVNET_DIR/sdk-addresses.json"
 ROLLUP_CONFIG_PATH="$DEVNET_DIR/rollup.json"
 
-GETH_URL='http://localhost:8545' 
+EPHEMERAL_GETH_URL='http://localhost:8545' 
 
 mkdir -p "$DEVNET_DIR"
 
@@ -49,25 +74,10 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
         GETH_PID=$!
 
         # Wait for ephemeral geth to start up
-        COUNTER=0
-        RETRIES=10
-        while [[ $COUNTER -lt $RETRIES ]]; do
-            echo "$(date '+%Y-%m-%d %H:%M:%S') - Trying to connect to RPC server at ${GETH_URL}"
-            if curl -s -X POST "${GETH_URL}" -H "Content-type: application/json" \
-            -d '{"id":1, "jsonrpc":"2.0", "method": "eth_chainId", "params":[]}' | grep -q "jsonrpc"; then
-                echo "$(date '+%Y-%m-%d %H:%M:%S') - RPC server at ${GETH_URL} ready"
-                break
-            fi
-            sleep 1 # sec 
-            COUNTER=$((COUNTER + 1))
-        done
-        if [[ $COUNTER -eq $RETRIES ]]; then
-            echo "$(date '+%Y-%m-%d %H:%M:%S') - Timed out waiting for RPC server at ${GETH_URL}."
-            exit 1
-        fi
+        wait_on_rpc_server "$EPHEMERAL_GETH_URL"
 
         # Fetch eth_accounts
-        DATA=$(curl -s -X POST "${GETH_URL}" -H "Content-type: application/json" \
+        DATA=$(curl -s -X POST "${EPHEMERAL_GETH_URL}" -H "Content-type: application/json" \
             -d '{"id":2, "jsonrpc":"2.0", "method": "eth_accounts", "params":[]}')
         ACCOUNT=$(echo "$DATA" | jq -r '.result[0]')
         echo "$(date '+%Y-%m-%d %H:%M:%S') - Deploying with $ACCOUNT"
@@ -76,29 +86,29 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
 
         # Send ETH to create2 deployer account, then deploy
         cast send --from "$ACCOUNT" \
-            --rpc-url "$GETH_URL" \
+            --rpc-url "$EPHEMERAL_GETH_URL" \
             --unlocked \
             --value '1ether' \
             0x3fAB184622Dc19b6109349B94811493BF2a45362 
         echo "publishing raw tx for create2 deployer"
-        cast publish --rpc-url "$GETH_URL" \
+        cast publish --rpc-url "$EPHEMERAL_GETH_URL" \
             '0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222' \
 
         echo "Deploying L1 contracts"
-        forge script scripts/Deploy.s.sol:Deploy --sender $ACCOUNT --broadcast --rpc-url $GETH_URL --unlocked
+        forge script scripts/Deploy.s.sol:Deploy --sender $ACCOUNT --broadcast --rpc-url $EPHEMERAL_GETH_URL --unlocked
 
         # Copy .deploy artifact before sync
         cp $L1_DEPLOYMENTS_PATH $ADDRESSES_JSON_PATH 
 
         echo "Syncing L1 contracts"
-        forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --broadcast --rpc-url $GETH_URL
+        forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --broadcast --rpc-url $EPHEMERAL_GETH_URL
 
         # Send debug_dumpBlock request to geth, save res to allocs.json
         BODY='{"id":3, "jsonrpc":"2.0", "method": "debug_dumpBlock", "params":["latest"]}'
         curl -s -X POST \
             -H "Content-type: application/json" \
             -d "${BODY}" \
-            "${GETH_URL}" | jq -r '.result' > $ALLOCS_PATH
+            "${EPHEMERAL_GETH_URL}" | jq -r '.result' > $ALLOCS_PATH
 
         # Kill ephemmeral geth in dev mode, we need to mutate l1 genesis and start again
         kill $GETH_PID
@@ -122,25 +132,28 @@ fi
 # Signal L1 to start
 touch /shared-optimism/start_l1
 echo "signaled L1 to start"
-while true; do
-    sleep 10  
-done
+
+# Wait for L1 to start
+L1_URL="http://l1:8545"
+wait_on_rpc_server "$L1_URL"
 
 if [ ! -e "$GENESIS_L2_PATH" ]; then
     echo "Generating genesis-l2.json and rollup.json"
     cd $OP_NODE_DIR
     go run cmd/main.go genesis l2 \
-        --l1-rpc $GETH_URL \
+        --l1-rpc $L1_URL \
         --deploy-config $DEVNET_CONFIG_PATH \
-        --deployments-dir $DEPLOYMENT_DIR \
+        --deployment-dir $DEPLOYMENT_DIR \
         --outfile.l2 $GENESIS_L2_PATH \
         --outfile.rollup $ROLLUP_CONFIG_PATH
 else 
     echo "genesis-l2.json and rollup.json already exist"
 fi
 
-# TODO: separate signal for l2 possible?
+touch /shared-optimism/start_l2
+echo "signaled L2 to start"
 
 while true; do
     sleep 10  
 done
+
