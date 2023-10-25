@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -exu
 
 L2_GETH_URL="http://op-geth:8545"

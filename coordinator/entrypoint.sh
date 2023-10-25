@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Func to be used later in script
 wait_on_rpc_server() {

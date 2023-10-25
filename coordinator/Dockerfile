@@ -1,17 +1,22 @@
-# Foundry docker image ref based on alpine
-FROM ghcr.io/foundry-rs/foundry:latest
+FROM golang:1.21-bullseye
 
 WORKDIR /
 
-# Install deps, # TODO: consolidate these 
-RUN apk update && \
-    apk add --no-cache git curl jq make bash nodejs npm direnv openssl
+# Install deps
+RUN apt-get update && \
+    apt-get install -y git curl jq make bash openssl python3 build-essential ca-certificates
+
+# Upgrade Node.js to a newer version
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs
+
+ENV PYTHON python3
+
 RUN npm install -g pnpm
 
-# Go install and update path
-RUN wget https://golang.org/dl/go1.20.linux-amd64.tar.gz
-RUN tar -C /usr/local -xzf go1.20.linux-amd64.tar.gz
-ENV PATH="/usr/local/go/bin:${PATH}"
+RUN curl -L https://foundry.paradigm.xyz | bash
+ENV PATH="${PATH}:/root/.foundry/bin"
+RUN foundryup
 
 WORKDIR /shared-optimism
 RUN git clone --recurse-submodules https://github.com/ethereum-optimism/optimism.git .
@@ -22,6 +27,7 @@ RUN pnpm build
 
 ENV GOPATH /go
 RUN make pre-devnet
+
 ENV PATH $PATH:$GOPATH/bin
 
 COPY entrypoint.sh /entrypoint.sh

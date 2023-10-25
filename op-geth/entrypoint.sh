@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -exu
 
 while [ ! -f "/shared-optimism/start_l2" ]; do
