@@ -2,28 +2,24 @@ version: '3'
 services:
   coordinator:
     build: 
-      context: .
-      dockerfile: Dockerfile-coordinator
+      context: ./coordinator
     volumes:
       - shared-optimism:/shared-optimism
-  l1:
+  l1-geth:
     build: 
-      context: .
-      dockerfile: Dockerfile-l1
+      context: ./l1-geth
     volumes:
       - shared-optimism:/shared-optimism
       # TODO: could add /db as persisted volume
-  l2:
+  op-geth:
     build: 
-      context: .
-      dockerfile: Dockerfile-l2
+      context: ./op-geth
     volumes:
       - shared-optimism:/shared-optimism
       # TODO: could add /db as persisted volume
   op-node:
     build:
-      context: .
-      dockerfile: Dockerfile-node
+      context: ./op-node
     volumes:
       - shared-optimism:/shared-optimism
 
