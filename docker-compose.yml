@@ -1,93 +1,32 @@
 version: '3'
 services:
-  l1:
-    build:
-      context: ./l1
-      dockerfile: Dockerfile
-    ports:
-      - "8545:8545"
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8545 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    environment:
-      # Pass in URL from host .env for syncing hardhat
-      - L1_SYNC_URL=${L1_SYNC_URL}
   coordinator:
-    depends_on:
-      l1:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "test -f /tmp/service_is_healthy"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-    environment:
-      - OP_COMPONENT_TYPE=coordinator
-      - ETH_RPC_URL=http://l1:8545 
-      # Private key of Admin account for l1 contract deployment, see l2/README.md
-      - PRIVATE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
-      - DEPLOYMENT_CONTEXT=primev-settlement
-      # Arbitrary salt for L1 contract deployment, see https://docs.openzeppelin.com/cli/2.8/deploying-with-create2#create2
-      # and https://github.com/ethereum-optimism/optimism/issues/7749.
-      - IMPL_SALT=primev-settlement
-    build:
-      context: ./l2
-      dockerfile: Dockerfile
+    build: 
+      context: .
+      dockerfile: Dockerfile-coordinator
     volumes:
-      - shared-contracts-bedrock:/shared-contracts-bedrock
-      - shared-l2-config:/shared-l2-config
-  l2-geth:
-    depends_on:
-      coordinator:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "http://localhost:8545"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    environment:
-      - OP_COMPONENT_TYPE=geth
-    build:
-      context: ./l2
-      dockerfile: Dockerfile
+      - shared-optimism:/shared-optimism
+  l1:
+    build: 
+      context: .
+      dockerfile: Dockerfile-l1
     volumes:
-      - shared-l2-config:/shared-l2-config
-  l2-node:
-    depends_on:
-      l2-geth:
-        condition: service_healthy
-    environment:
-      - OP_COMPONENT_TYPE=node
-      - ETH_RPC_URL=http://l1:8545 
-      # Private key of Sequencer account for operating op-node, 0x prefix stripped. 
-      - SEQ_KEY=47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a
-    build:
-      context: ./l2
-      dockerfile: Dockerfile
+      - shared-optimism:/shared-optimism
+      # TODO: could add /db as persisted volume
+  l2:
+    build: 
+      context: .
+      dockerfile: Dockerfile-l2
     volumes:
-      - shared-contracts-bedrock:/shared-contracts-bedrock
-      - shared-l2-config:/shared-l2-config
-  l2-batcher:
-    depends_on:
-      coordinator:
-        condition: service_healthy
-    environment:
-      - OP_COMPONENT_TYPE=batcher
+      - shared-optimism:/shared-optimism
+      # TODO: could add /db as persisted volume
+  op-node:
     build:
-      context: ./l2
-      dockerfile: Dockerfile
-  l2-proposer:
-    depends_on:
-      coordinator:
-        condition: service_healthy
-    environment:
-      - OP_COMPONENT_TYPE=proposer
-    build:
-      context: ./l2
-      dockerfile: Dockerfile
-  # TODOs include ports exposing
+      context: .
+      dockerfile: Dockerfile-node
+    volumes:
+      - shared-optimism:/shared-optimism
+
+
 volumes:
-  shared-contracts-bedrock:
-  shared-l2-config:
+  shared-optimism:
