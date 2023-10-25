@@ -5,7 +5,6 @@ RUN npm install -g pnpm
 
 FROM golang:1.21-bullseye
 
-# Install deps
 RUN apt-get update && \
     apt-get install -y git curl jq make bash openssl python3 build-essential ca-certificates
 
@@ -21,8 +20,6 @@ WORKDIR /shared-optimism
 RUN git clone --recurse-submodules https://github.com/ethereum-optimism/optimism.git .
 RUN git checkout v1.2.0
 RUN pnpm install 
-# RUN make op-node op-batcher op-proposer
-RUN make op-node
 RUN pnpm build
 
 ENV GOPATH /go

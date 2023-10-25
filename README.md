@@ -23,10 +23,6 @@ This proj is heavily inspired by https://github.com/ethereum-optimism/optimism/t
 
 *op-proposer* proposes new state roots for L2.
 
-## TODO: Experiment with non-default deploy-config settings
+## TODO: Experiment with non-default deploy config mutations, use op-stack validation afterwards 
 
-## TODO: Multistage docker builds
-
-## TODO: can improve spin up time if you cache l1 genesis state in volume
-
-## TODO: Deploy config mutations, use op-stack validation afterwards 
+## TODO: various naming and dir changes in coordinator entrypoint 
