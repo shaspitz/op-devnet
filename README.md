@@ -25,6 +25,10 @@ This proj is heavily inspired by https://github.com/ethereum-optimism/optimism/t
 
 ## TODO: Experiment with non-default deploy-config settings
 
+## TODO: Multistage docker builds
+
+## TODO: fix target OS issue
+
 ## TODO: can improve spin up time if you cache l1 genesis state in volume
 
 ## TODO: Deploy config mutations, use op-stack validation afterwards 
