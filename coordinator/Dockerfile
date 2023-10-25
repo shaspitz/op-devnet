@@ -1,28 +1,28 @@
-FROM golang:1.21-bullseye
+FROM node:21-bullseye AS base-node
+WORKDIR /node
 
-WORKDIR /
+RUN npm install -g pnpm
+
+FROM golang:1.21-bullseye
 
 # Install deps
 RUN apt-get update && \
     apt-get install -y git curl jq make bash openssl python3 build-essential ca-certificates
 
-# Upgrade Node.js to a newer version
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get install -y nodejs
-
 ENV PYTHON python3
-
-RUN npm install -g pnpm
 
 RUN curl -L https://foundry.paradigm.xyz | bash
 ENV PATH="${PATH}:/root/.foundry/bin"
 RUN foundryup
 
+COPY --from=base-node /usr/local /usr/local
+
 WORKDIR /shared-optimism
 RUN git clone --recurse-submodules https://github.com/ethereum-optimism/optimism.git .
 RUN git checkout v1.2.0
 RUN pnpm install 
-RUN make op-node op-batcher op-proposer
+# RUN make op-node op-batcher op-proposer
+RUN make op-node
 RUN pnpm build
 
 ENV GOPATH /go
