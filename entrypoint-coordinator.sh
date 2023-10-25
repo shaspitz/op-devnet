@@ -154,8 +154,4 @@ fi
 
 touch /shared-optimism/start_l2
 echo "signaled L2 to start"
-
-while true; do
-    sleep 10  
-done
-
+echo "Coordintor setup complete"
