@@ -26,26 +26,20 @@ wait_on_rpc_server() {
 }
 
 # TODO: change devnetL1 to primev string, use custom deploy config
-# TODO: possibly clean up naming
 MONOREPO_DIR=/shared-optimism 
 DEVNET_DIR="$MONOREPO_DIR/.devnet"
 CONTRACTS_BEDROCK_DIR="$MONOREPO_DIR/packages/contracts-bedrock"
 DEPLOYMENT_DIR="$CONTRACTS_BEDROCK_DIR/deployments/devnetL1"
 OP_NODE_DIR="$MONOREPO_DIR/op-node"
-OPS_BEDROCK_DIR="$MONOREPO_DIR/ops-bedrock"
 DEPLOY_CONFIG_DIR="$CONTRACTS_BEDROCK_DIR/deploy-config"
 DEVNET_CONFIG_PATH="$DEPLOY_CONFIG_DIR/devnetL1.json"
 DEVNET_CONFIG_TEMPLATE_PATH="$DEPLOY_CONFIG_DIR/devnetL1-template.json"
-OPS_CHAIN_OPS="$MONOREPO_DIR/op-chain-ops"
-SDK_DIR="$MONOREPO_DIR/packages/sdk"
 
-# TODO: rm unused
-L1_DEPLOYMENTS_PATH="$DEPLOYMENT_DIR/.deploy"
+TMP_L1_DEPLOYMENTS_PATH="$DEPLOYMENT_DIR/.deploy"
 GENESIS_L1_PATH="$DEVNET_DIR/genesis-l1.json"
 GENESIS_L2_PATH="$DEVNET_DIR/genesis-l2.json"
 ALLOCS_PATH="$DEVNET_DIR/allocs-l1.json"
-ADDRESSES_JSON_PATH="$DEVNET_DIR/addresses.json" # TODO: bad naming, make L1_DEPLOYMENTS_PATH TMP_L1_DEPLOYMENTS_PATH and this L1_DEPLOYMENTS_PATH 
-SDK_ADDRESSES_JSON_PATH="$DEVNET_DIR/sdk-addresses.json"
+L1_DEPLOYMENTS_PATH="$DEVNET_DIR/addresses.json" 
 ROLLUP_CONFIG_PATH="$DEVNET_DIR/rollup.json"
 
 EPHEMERAL_GETH_URL='http://localhost:8545' 
@@ -95,7 +89,7 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
         forge script scripts/Deploy.s.sol:Deploy --sender $ACCOUNT --broadcast --rpc-url $EPHEMERAL_GETH_URL --unlocked
 
         # Copy .deploy artifact before sync
-        cp $L1_DEPLOYMENTS_PATH $ADDRESSES_JSON_PATH 
+        cp $TMP_L1_DEPLOYMENTS_PATH $L1_DEPLOYMENTS_PATH 
 
         echo "Syncing L1 contracts"
         forge script scripts/Deploy.s.sol:Deploy --sig 'sync()' --broadcast --rpc-url $EPHEMERAL_GETH_URL
@@ -122,7 +116,7 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
     go run cmd/main.go genesis l1 \
         --deploy-config $DEVNET_CONFIG_PATH \
         --l1-allocs $ALLOCS_PATH \
-        --l1-deployments $ADDRESSES_JSON_PATH \
+        --l1-deployments $L1_DEPLOYMENTS_PATH \
         --outfile.l1 $GENESIS_L1_PATH
 else 
     echo "genesis-l1.json already exist"
