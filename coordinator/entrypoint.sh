@@ -72,7 +72,12 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
             jq --arg gtn "$GOVERNANCE_TOKEN_NAME" '.governanceTokenName = $gtn' "$DEVNET_CONFIG_PATH" > temp.json && mv temp.json "$DEVNET_CONFIG_PATH"
         fi
 
-        cat $DEVNET_CONFIG_PATH
+        # config after mutations
+        echo "config after mutations: " && cat $DEVNET_CONFIG_PATH
+
+        # Check config for breaking changes
+        cd $MONOREPO_DIR
+        go run op-chain-ops/cmd/check-deploy-config/main.go --path "$DEVNET_CONFIG_PATH"
 
         # Spawn ephemeral geth in dev mode to deploy L1 contracts into state
         geth --dev --http --http.api eth,debug \
@@ -127,7 +132,7 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
 
     # HACKY HACKY, no idea why replacing this timestamp field is needed.
     # See https://github.com/ethereum-optimism/optimism/blob/ee644a0bf55cae97e847aeecef07c059a2de3160/bedrock-devnet/devnet/__init__.py#L192
-    jq --arg ts "$(printf '0x%x\n' $(date +%s))" '.l1GenesisBlockTimestamp = $ts' "$DEVNET_CONFIG_TEMPLATE_PATH" > "$DEVNET_CONFIG_PATH"
+    jq --arg ts "$(printf '0x%x\n' $(date +%s))" '.l1GenesisBlockTimestamp = $ts' "$DEVNET_CONFIG_PATH" > temp.json && mv temp.json "$DEVNET_CONFIG_PATH"
 
     cd $OP_NODE_DIR
     # Create l1 genesis 

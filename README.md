@@ -23,7 +23,3 @@ This proj is heavily inspired by https://github.com/ethereum-optimism/optimism/t
 *op-batcher* takes transactions from the L2 Sequencer and publishes those transactions to L1.
 
 *op-proposer* proposes new state roots for L2.
-
-## TODO: Experiment with non-default deploy config mutations, use op-stack validation afterwards 
-
-## TODO: various naming and dir changes in coordinator entrypoint 
