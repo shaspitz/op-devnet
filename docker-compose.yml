@@ -5,6 +5,12 @@ services:
       context: ./coordinator
     volumes:
       - shared-optimism:/shared-optimism
+    environment:
+      - DEPLOYMENT_CONTEXT=${DEPLOYMENT_CONTEXT}
+      - L1_BLOCK_TIME=${L1_BLOCK_TIME}
+      - L2_BLOCK_TIME=${L2_BLOCK_TIME}
+      - GOVERNANCE_TOKEN_SYMBOL=${GOVERNANCE_TOKEN_SYMBOL}
+      - GOVERNANCE_TOKEN_NAME=${GOVERNANCE_TOKEN_NAME}
   l1-geth:
     build: 
       context: ./l1-geth

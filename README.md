@@ -8,6 +8,7 @@ This proj is heavily inspired by https://github.com/ethereum-optimism/optimism/t
 * `docker logs op-devnet-coordinator-1` etc. to inspect individual container logs.
 * `docker exec -it op-devnet-coordinator-1 /bin/sh` etc. to shell into one of the containers. 
 * `docker-compose down -v` to bring down system and clear volumes.
+* Key system params can be set from `.env`.
 
 ## Design
 

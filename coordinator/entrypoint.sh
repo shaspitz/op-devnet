@@ -25,14 +25,13 @@ wait_on_rpc_server() {
     fi
 }
 
-# TODO: change devnetL1 to primev string, use custom deploy config
 MONOREPO_DIR=/shared-optimism 
 DEVNET_DIR="$MONOREPO_DIR/.devnet"
 CONTRACTS_BEDROCK_DIR="$MONOREPO_DIR/packages/contracts-bedrock"
-DEPLOYMENT_DIR="$CONTRACTS_BEDROCK_DIR/deployments/devnetL1"
+DEPLOYMENT_DIR="$CONTRACTS_BEDROCK_DIR/deployments/$DEPLOYMENT_CONTEXT"
 OP_NODE_DIR="$MONOREPO_DIR/op-node"
 DEPLOY_CONFIG_DIR="$CONTRACTS_BEDROCK_DIR/deploy-config"
-DEVNET_CONFIG_PATH="$DEPLOY_CONFIG_DIR/devnetL1.json"
+DEVNET_CONFIG_PATH="$DEPLOY_CONFIG_DIR/$DEPLOYMENT_CONTEXT.json"
 DEVNET_CONFIG_TEMPLATE_PATH="$DEPLOY_CONFIG_DIR/devnetL1-template.json"
 
 TMP_L1_DEPLOYMENTS_PATH="$DEPLOYMENT_DIR/.deploy"
@@ -53,8 +52,27 @@ if [ ! -e "$GENESIS_L1_PATH" ]; then
 
     if [ ! -e "$ALLOCS_PATH" ]; then
         echo "Generating allocs-l1.json"
+
+        # Use template as base path, 
+        # note system can be fragile to mutating certain fields. 
         cat "$DEVNET_CONFIG_TEMPLATE_PATH" > "$DEVNET_CONFIG_PATH"
-        # TODO: mutations could happen here
+
+        # Mutate fields in-place if select env vars are set
+        if [ -n "$L1_BLOCK_TIME" ]; then
+            jq --arg bt "$L1_BLOCK_TIME" '.l1BlockTime = ($bt | tonumber)' "$DEVNET_CONFIG_PATH" > temp.json && mv temp.json "$DEVNET_CONFIG_PATH"
+        fi
+        if [ -n "$L2_BLOCK_TIME" ]; then
+            jq --arg bt "$L2_BLOCK_TIME" '.l2BlockTime = ($bt | tonumber)' "$DEVNET_CONFIG_PATH" > temp.json && mv temp.json "$DEVNET_CONFIG_PATH"
+        fi
+        # TODO: figure out where these two fields get reset by end of script
+        if [ -n "$GOVERNANCE_TOKEN_SYMBOL" ]; then
+            jq --arg gts "$GOVERNANCE_TOKEN_SYMBOL" '.governanceTokenSymbol = $gts' "$DEVNET_CONFIG_PATH" > temp.json && mv temp.json "$DEVNET_CONFIG_PATH"
+        fi
+        if [ -n "$GOVERNANCE_TOKEN_NAME" ]; then
+            jq --arg gtn "$GOVERNANCE_TOKEN_NAME" '.governanceTokenName = $gtn' "$DEVNET_CONFIG_PATH" > temp.json && mv temp.json "$DEVNET_CONFIG_PATH"
+        fi
+
+        cat $DEVNET_CONFIG_PATH
 
         # Spawn ephemeral geth in dev mode to deploy L1 contracts into state
         geth --dev --http --http.api eth,debug \
@@ -146,3 +164,4 @@ fi
 touch /shared-optimism/start_l2
 echo "signaled L2 to start"
 echo "Coordintor setup complete"
+exit 0
