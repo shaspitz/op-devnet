@@ -1,15 +1,9 @@
 #!/bin/bash
 set -exu
 
-while [ ! -f "/shared-optimism/start_l1" ]; do
-  sleep 5 # sec
-done
-
 mkdir /db
 
-MONOREPO_DIR=/shared-optimism 
-DEVNET_DIR="$MONOREPO_DIR/.devnet"
-GENESIS_L1_PATH="$DEVNET_DIR/genesis-l1.json"
+GENESIS_L1_PATH="genesis.json"
 
 VERBOSITY=${GETH_VERBOSITY:-3}
 GETH_DATA_DIR=/db
@@ -20,6 +14,8 @@ BLOCK_SIGNER_PRIVATE_KEY="ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d
 BLOCK_SIGNER_ADDRESS="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 RPC_PORT="${RPC_PORT:-8545}"
 WS_PORT="${WS_PORT:-8546}"
+
+echo '688f5d737bad920bdfb2fc2f488d6b6209eebda1dae949a8de91398d932c517a' > /jwt-secret.txt
 
 if [ ! -d "$GETH_KEYSTORE_DIR" ]; then
 	echo "$GETH_KEYSTORE_DIR missing, running account import"
@@ -73,7 +69,7 @@ exec geth \
 	--authrpc.addr="0.0.0.0" \
 	--authrpc.port="8551" \
 	--authrpc.vhosts="*" \
-	--authrpc.jwtsecret=/shared-optimism/ops-bedrock/test-jwt-secret.txt \
+	--authrpc.jwtsecret=/jwt-secret.txt \
 	--gcmode=archive \
 	--metrics \
 	--metrics.addr=0.0.0.0 \

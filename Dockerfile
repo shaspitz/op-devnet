@@ -5,4 +5,6 @@ RUN apk add --no-cache jq
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+COPY genesis.json /genesis.json
+
 ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
