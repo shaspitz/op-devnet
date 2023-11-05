@@ -4,6 +4,3 @@ services:
   l1-geth:
     build: 
       context: .
-
-volumes:
-  shared-optimism:
